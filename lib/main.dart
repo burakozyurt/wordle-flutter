@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:io';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:universal_platform/universal_platform.dart';
 import 'package:virtual_keyboard_multi_language/virtual_keyboard_multi_language.dart';
 
 import 'custom-layout.dart';
@@ -22,7 +23,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.orange,
       ),
-      home: const MyHomePage(title: 'Wordle with Flutter'),
+      home: const MyHomePage(title: 'Wordle For DeSo'),
     );
   }
 }
@@ -36,7 +37,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   String text = "";
   String solution = "planta".toUpperCase();
   int currentWord = 0;
@@ -215,28 +215,33 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    queryData = MediaQuery.of(context);
     Future.delayed(
         Duration.zero,
         () => _showDialog
-            ? _showAlert(
-                context,
-                DialogType.INFO,
-                "Lets play",
-                 "You need to guess the word. Its in Spanish!!"): null);
+            ? _showAlert(context, DialogType.INFO, "Lets play",
+                "You need to guess the word. Its in Spanish!!")
+            : null);
     return Scaffold(
+        resizeToAvoidBottomInset: true,
         appBar: AppBar(
-          actions: playDay? [] : [IconButton(
-            icon: Icon(
-              Icons.replay,
-              color: Colors.black,
-            ),
-            onPressed: () {
-              setState(() {
-                _initTheGame();
-              });
-            },
-          )],
+          elevation: 0,
+                   backgroundColor: Colors.white,
+   centerTitle: true,
+          actions: playDay
+              ? []
+              : [
+                  IconButton(
+                    icon: Icon(
+                      Icons.replay,
+                      color: Colors.black,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _initTheGame();
+                      });
+                    },
+                  )
+                ],
           title: Text(widget.title,
               style: TextStyle(
                   fontFamily: 'Calestra',
@@ -244,19 +249,23 @@ class _MyHomePageState extends State<MyHomePage> {
                   fontWeight: FontWeight.w700)),
         ),
         body: Container(
-          height: queryData.size.height,
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
           color: Colors.white,
           child: Center(
-            child: Column(
-              children: <Widget>[
-                _getTopContainers(),
-                Platform.isIOS ? SizedBox(height: 40) : Container(),
-                Container(
-                    height: 40,
-                    child: Image.network(
-                        'https://mir-s3-cdn-cf.behance.net/project_modules/fs/40798517511159.562bafbf8916a.jpg')),
-                _getKeyboard()
-              ],
+            child: Container(
+              height: MediaQuery.of(context).size.height,
+              width: 480,
+              color: Colors.white,
+              child: Center(
+                child: ListView(
+                  children: <Widget>[
+                    _getTopContainers(),
+                    
+                    _getKeyboard(),
+                  ],
+                ),
+              ),
             ),
           ),
         ));
@@ -267,10 +276,10 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget _getTopContainers() {
     return Container(
         color: Colors.transparent,
-        padding: EdgeInsets.fromLTRB(40.0, 40.0, 40.0, 00.0),
+        padding: EdgeInsets.fromLTRB(64.0, 16.0, 64.0, 0.0),
         key: PageStorageKey<String>("grid"),
-        width: queryData.size.width,
-        height: Platform.isIOS ? 480 : 440,
+        width: 480,
+        height: 480,
         child: GridView.builder(
             physics: NeverScrollableScrollPhysics(),
             itemCount: 30,
@@ -294,9 +303,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 color: _getColor(index),
                                 border: Border.all(color: Color(0xFFcdd0d5)),
                                 borderRadius:
-                                BorderRadius.all(Radius.circular(10.0))),
-                            height: 30,
-                            width: 30,
+                                    BorderRadius.all(Radius.circular(10.0))),
                             child: Text(characters[index ~/ 5][index % 5]),
                           ))));
             }));
@@ -315,21 +322,22 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   _getKeyboard() {
-    return Container(
-      color: Colors.transparent,
-      child: VirtualKeyboard(
-          height: 100,
-          width: queryData.size.width - 20,
-          textColor: Colors.white,
-          textController: _controllerText,
-          customLayoutKeys: _customLayoutKeys,
-          defaultLayouts: [
-            VirtualKeyboardDefaultLayouts.Arabic,
-            VirtualKeyboardDefaultLayouts.English
-          ],
-          fontSize: 18,
-          type: VirtualKeyboardType.Alphanumeric,
-          onKeyPress: _onKeyPress),
+    return Flexible(
+      child: Container(
+        color: Colors.transparent,
+        child: VirtualKeyboard(
+          height: 150,
+            width: MediaQuery.of(context).size.width,
+            textColor: Colors.black,
+            textController: _controllerText,
+            customLayoutKeys: _customLayoutKeys,
+            defaultLayouts: [
+              VirtualKeyboardDefaultLayouts.English
+            ],
+            fontSize: 18,
+            type: VirtualKeyboardType.Alphanumeric,
+            onKeyPress: _onKeyPress,),
+      ),
     );
   }
 
@@ -398,7 +406,6 @@ class _MyHomePageState extends State<MyHomePage> {
     ).show();
   }
 
-
   _onKeyPress(VirtualKeyboardKey key) {
     if (key.keyType == VirtualKeyboardKeyType.String) {
       if (text.length < 5 && !endGame) {
@@ -422,11 +429,11 @@ class _MyHomePageState extends State<MyHomePage> {
               if (i < solution.characters.length) {
                 if (solution.characters.elementAt(i).toUpperCase() ==
                     characters[currentWord][i]) {
-                  correct.addAll({ i : characters[currentWord][i]});
+                  correct.addAll({i: characters[currentWord][i]});
                   colors[currentWord][i] = 2;
                 } else if (solution.contains(characters[currentWord][i])) {
                   if (!almost.containsValue(characters[currentWord][i])) {
-                    almost.addAll({i : characters[currentWord][i]});
+                    almost.addAll({i: characters[currentWord][i]});
                     colors[currentWord][i] = 1;
                   }
                 } else {
@@ -444,12 +451,14 @@ class _MyHomePageState extends State<MyHomePage> {
             text = "";
             if (currentWord == 5 || correct.entries.length == 5) {
               endGame = true;
-              _showAlert(context,correct.entries.length == 5
-                  ? DialogType.SUCCES
-                  : DialogType.QUESTION,
+              _showAlert(
+                  context,
+                  correct.entries.length == 5
+                      ? DialogType.SUCCES
+                      : DialogType.QUESTION,
                   correct.entries.length == 5 ? "Yeeeesssss" : "Ooooh",
-                  correct.entries.length == 5 ?
-                      "$solution You did it! :)"
+                  correct.entries.length == 5
+                      ? "$solution You did it! :)"
                       : "Sorry for that. You can reload the game with another word in the top bar");
             } else {
               currentWord = currentWord + 1;
@@ -462,5 +471,4 @@ class _MyHomePageState extends State<MyHomePage> {
     // Update the screen
     setState(() {});
   }
-
 }

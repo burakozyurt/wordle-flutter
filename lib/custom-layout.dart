@@ -49,7 +49,7 @@ const List<List> _characters = [
   ],
   // Row 3
   const [
-    VirtualKeyboardKeyAction.Backspace,
+    VirtualKeyboardKeyAction.Return,
     '',
     'Z',
     'X',
@@ -59,7 +59,7 @@ const List<List> _characters = [
     'N',
     'M',
     '',
-    VirtualKeyboardKeyAction.Return
+    VirtualKeyboardKeyAction.Backspace,
   ]
 ];
 
